@@ -99,9 +99,17 @@ namespace AttributeRouting.Web.Mvc.Framework
 
             // Constrain by subdomain if configured.
             var requestedSubdomain = GetCachedValue(httpContext, RequestedSubdomainKey, () => _configuration.SubdomainParser(httpContext.SafeGet(c => c.Request.Headers["host"])));
-            if (!_visitor.IsSubdomainMatched(requestedSubdomain))
+            var subdomainRouteDataKey = "";
+            if (!_visitor.IsSubdomainMatched(requestedSubdomain, out subdomainRouteDataKey))
             {
                 return null;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(subdomainRouteDataKey))
+                {
+                    routeData.Values.Add(subdomainRouteDataKey, requestedSubdomain);
+                }
             }
 
             // Constrain by culture name if configured.

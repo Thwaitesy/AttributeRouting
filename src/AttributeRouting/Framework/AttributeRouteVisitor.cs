@@ -231,8 +231,10 @@ namespace AttributeRouting.Framework
         /// </summary>
         /// <param name="requestedSubdomain">The subdomain part of the host from the current request</param>
         /// <returns>True if the subdomain for this route matches the current request host.</returns>
-        public bool IsSubdomainMatched(string requestedSubdomain)
+        public bool IsSubdomainMatched(string requestedSubdomain, out string subdomainRouteDataKey)
         {
+            subdomainRouteDataKey = "";
+
             // If no subdomains are mapped with AR, then yes.
             if (!_configuration.MappedSubdomains.Any())
             {
@@ -249,6 +251,13 @@ namespace AttributeRouting.Framework
             var routeSubdomain = _route.Subdomain ?? _configuration.DefaultSubdomain;
             if (routeSubdomain.ValueEquals(requestedSubdomain))
             {
+                return true;
+            }
+
+            // Match if this route is a wildcard and the url has a subdomain
+            if (requestedSubdomain.HasValue() && routeSubdomain.StartsWith("{") && routeSubdomain.EndsWith("}"))
+            {
+                subdomainRouteDataKey = routeSubdomain.Replace("{", "").Replace("}", "");
                 return true;
             }
 
